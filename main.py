@@ -225,4 +225,4 @@ async def dissapMessage(message,output):
   time.sleep(10)
   await sent.delete()
 #runs the client
-client.run(TOKEN)
+client.run(os.getenv("TOKEN"))
