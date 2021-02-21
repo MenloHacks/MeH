@@ -1,10 +1,14 @@
 import discord
 import os
 import time
+import asyncio
 
-client = discord.Client()
 
-TOKEN="ODEwMjM3NDc0MjM2MTM3NTAy.YCgucw.HVFQbzrWTBe4ZKDwnSgFa_-Y5Xs"
+intents = discord.Intents.default()
+intents.members = True
+intents.reactions = True
+client = discord.Client(intents=intents)
+
 # 'global' variables
 INVOCATION_PREFIX = "!"
 CREATE_COMMAND = "create"
@@ -27,12 +31,10 @@ async def on_ready():
 
 @client.event
 async def on_raw_reaction_add(payload):
-  print("test")
   if payload.channel_id == 805214121163358288:
     print(str(payload.emoji))
     if str(payload.emoji) == "✅":
       await payload.member.add_roles(discord.utils.get(payload.member.guild.roles,name=("Hacker")))
-      print("testtt")
 
 @client.event
 async def on_message(message):
@@ -69,7 +71,7 @@ async def on_message(message):
 
   if call == DELETE_COMMAND: #delete team command
     await deleteTeam(message,command)
-
+  await asyncio.sleep(5)
   await message.delete()
 
 
@@ -128,6 +130,7 @@ async def createTeam(message,command):
     await teamVoice.set_permissions(teamRole,view_channel=True)
 
     #adds the newly created role to the author of the message
+    print(teamRole)
     await message.author.add_roles(teamRole)
 
     #sends message notifying user
@@ -167,7 +170,7 @@ def findTeam(message,teamName):
 def findSensitiveTeam(message,teamName):
   return discord.utils.get(message.guild.roles,name=(teamName))
 
-def findChannel(message,channelName):
+def findChannel(message,channelName,type):
   """Checks if Channel with specified name exists. Will only return the first channel with given name.
 
   Returns: first Channel object with specified name"""
@@ -209,20 +212,42 @@ def collapseParams(command):
 async def deleteTeam(message,command):
   """Deletes a given role from the author and deletes the corresponding text channel and voice channel for that role.
   Parameters: Mesage object, list of Strings"""
-
-
   teamName = collapseParams(command)
   if findTeam(message,teamName) in message.author.roles:
+
     team = findTeam(message,teamName)
     print(team)
-    await team.delete()
-    await findChannel(message,teamName).delete()
-    await (findChannel(message,teamName.lower().replace(" ","-"))).delete()
-    await dissapMessage(message,"Team has been deleted! :( ")
+    confirm = await message.channel.send("Everyone in the team must react to this message for the team to be deleted")
+    await confirm.add_reaction("✅")
+    cache_msg = await confirm.channel.fetch_message(confirm.id)
+    print(cache_msg)
+    print(cache_msg.reactions)
+    start = time.time()
+    authors = set()
+    while ((time.time() - start) < 30) and len(authors) < len(team.members):
+      for i in cache_msg.reactions:
+           print(i)
+           async for j in i.users():
+             print(j)
+             for k in j.roles:
+                print(k)
+                if (k.name==(teamName)):
+                    authors.add(j)
+                    print(j)
+    print(team.members)
+    if len(team.members) == len(authors):
+        print("get here")
+        await team.delete()
+        textchannel = findChannel(message,teamName,text)
+        await findChannel(message,teamName).delete()
+        await (findChannel(message,teamName.lower().replace(" ","-"))).delete()
+        await dissapMessage(message,"Team has been deleted! :( ")
+    else:
+        await dissapMessage(message,"Not enough reactions, team has been maintained.")
 
 async def dissapMessage(message,output):
   sent = await message.channel.send(output)
-  time.sleep(10)
+  await asyncio.sleep(10)
   await sent.delete()
 #runs the client
 client.run(os.getenv("TOKEN"))
