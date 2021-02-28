@@ -170,7 +170,7 @@ def findTeam(message,teamName):
 def findSensitiveTeam(message,teamName):
   return discord.utils.get(message.guild.roles,name=(teamName))
 
-def findChannel(message,channelName,type):
+def findChannel(message,channelName):
   """Checks if Channel with specified name exists. Will only return the first channel with given name.
 
   Returns: first Channel object with specified name"""
@@ -238,9 +238,10 @@ async def deleteTeam(message,command):
     if len(team.members) == len(authors):
         print("get here")
         await team.delete()
-        textchannel = findChannel(message,teamName,text)
-        await findChannel(message,teamName).delete()
         await (findChannel(message,teamName.lower().replace(" ","-"))).delete()
+        await asyncio.sleep(1)
+        await findChannel(message,teamName).delete()
+
         await dissapMessage(message,"Team has been deleted! :( ")
     else:
         await dissapMessage(message,"Not enough reactions, team has been maintained.")
