@@ -16,6 +16,7 @@ JOIN_COMMAND = "join"
 HELP_COMMAND = "help"
 LEAVE_COMMAND = "leave"
 DELETE_COMMAND = "del"
+PING_COMMAND = "ping"
 FORBIDDEN_NAMES = ["Organizer","Judge","Hacker","Mentor","Presenter","Bot","rules","start-here","announcements","music","gaming","movies","Gaming","Music","Movie Theater","general","looking-for-team","General","General 2","ask-mentor","ask-organizer","ask-mlh","Help","Help 2","Mentor Help","Mentor Waiting Room","organizer-text","Organizer Voice","judge-text","Waiting Room","Judge 1","bot-commands","music-bots"]
 @client.event
 async def on_member_join(member):
@@ -71,6 +72,9 @@ async def on_message(message):
 
   if call == DELETE_COMMAND: #delete team command
     await deleteTeam(message,command)
+
+  if call == PING_COMMAND:
+      await dissapMessage(message,"pong!")
   await message.delete()
 
 
@@ -101,6 +105,7 @@ def doHelp():
   #del command
   outString += "**" + INVOCATION_PREFIX + DELETE_COMMAND + "**" + " *[team_name]* will **PERMANENTLY** delete the team and all channels associated. \n"
   #returns the created string
+  outString += "**" + INVOCATION_PREFIX + PING_COMMAND + "**" + "check whether the bot is active \n"
   return outString
 
 async def createTeam(message,command):
@@ -121,13 +126,13 @@ async def createTeam(message,command):
     teamName = stringName
     if teamName != "":
 
-
+        category = await message.guild.create_category(name=teamName) #comment this line to add more teams.
         #creates a role for the team
         teamRole = await message.guild.create_role(name=teamName,colour=discord.Colour.random(),hoist=True,mentionable=True)
 
         #creates the text and voice channels for the team
-        teamText = await message.guild.create_text_channel(teamName)
-        teamVoice = await message.guild.create_voice_channel(teamName)
+        teamText = await category.create_text_channel(teamName)
+        teamVoice = await category.create_voice_channel(teamName)
 
         #set permissions for the newly created text and voice channels
         await teamText.set_permissions(message.guild.default_role,read_messages=False)
@@ -165,10 +170,10 @@ async def joinTeam(message,command):
     await message.author.add_roles(team)
 
     #sends user a message to notify
-    await message.channel.send("If you were not already in that team, the role has been added.")
+    await dissapMessage(message,"If you were not already in that team, the role has been added.")
   else:
     #team doe not exist
-    await message.channel.send("That role does not exist.")
+    await dissapMessage(message,"That role does not exist.")
 
 def findTeam(message,teamName):
   """Checks if Role with specified name exists. Will only return the first role with given name.
@@ -226,8 +231,9 @@ async def deleteTeam(message,command):
   teamName = collapseParams(command)
   stringName = ""
   for i in teamName:
-      if i.isalnum() or i==" ":
+      if i.isalnum() or (i == " "):
           stringName += i
+          print(i)
   if stringName[0] == " ":
       stringName = stringName[1:]
   teamName = stringName
@@ -256,15 +262,13 @@ async def deleteTeam(message,command):
             print("get here")
             await team.delete()
             textchanname = teamName.lower()
-            stringName = ""
-            for i in textchanname:
-                if i.isalnum():
-                    stringName += i
-            textchanname = stringName.replace(" ","-")
+            textchanname = textchanname.replace(" ","-")
             if textchanname == "":
                 textchanname = "-"
             print(textchanname)
             await (findChannel(message,textchanname)).delete()
+            await asyncio.sleep(1)
+            await findChannel(message,teamName).delete()
             await asyncio.sleep(1)
             await findChannel(message,teamName).delete()
 
