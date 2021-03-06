@@ -105,7 +105,7 @@ def doHelp():
   #del command
   outString += "**" + INVOCATION_PREFIX + DELETE_COMMAND + "**" + " *[team_name]* will **PERMANENTLY** delete the team and all channels associated. \n"
   #returns the created string
-  outString += "**" + INVOCATION_PREFIX + PING_COMMAND + "**" + "check whether the bot is active \n"
+  outString += "**" + INVOCATION_PREFIX + PING_COMMAND + "**" + " can check whether the bot is active \n"
   return outString
 
 async def createTeam(message,command):
@@ -250,14 +250,15 @@ async def deleteTeam(message,command):
         start = time.time()
         authors = set()
         while ((time.time() - start) < 30) and len(authors) < len(team.members):
+          cache_msg = await confirm.channel.fetch_message(confirm.id)
           for i in cache_msg.reactions:
                async for j in i.users():
+                 print(j.name)
                  for k in j.roles:
                     if (k.name==(teamName)):
                         authors.add(j)
-                        print(authors)
-                        print(team.members)
-        print(team.members)
+                        print(str(len(authors)) + "auth")
+                        print(str(len(team.members))+ "team")
         if len(team.members) == len(authors):
             print("get here")
             await team.delete()
