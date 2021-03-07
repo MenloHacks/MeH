@@ -2,7 +2,8 @@ import discord
 import os
 import time
 import asyncio
-
+import random
+import requests
 
 intents = discord.Intents.default()
 intents.members = True
@@ -17,6 +18,8 @@ HELP_COMMAND = "help"
 LEAVE_COMMAND = "leave"
 DELETE_COMMAND = "del"
 PING_COMMAND = "ping"
+RAND_COMMAND = "random"
+CAT_COMMAND = "cat"
 FORBIDDEN_NAMES = ["Organizer","Judge","Hacker","Mentor","Presenter","Bot","rules","start-here","announcements","music","gaming","movies","Gaming","Music","Movie Theater","general","looking-for-team","General","General 2","ask-mentor","ask-organizer","ask-mlh","Help","Help 2","Mentor Help","Mentor Waiting Room","organizer-text","Organizer Voice","judge-text","Waiting Room","Judge 1","bot-commands","music-bots"]
 @client.event
 async def on_member_join(member):
@@ -75,6 +78,27 @@ async def on_message(message):
 
   if call == PING_COMMAND:
       await dissapMessage(message,"pong!")
+  if call == CAT_COMMAND:
+      response = requests.get('https://aws.random.cat/meow.php')
+      data = response.json()
+      embed = discord.Embed(
+          title = 'here is cat',
+          description = 'enjoy',
+          colour = discord.Colour.purple()
+          )
+      embed.set_image(url=data['file'])
+      embed.set_footer(text="")
+      cat = await message.channel.send(embed=embed)
+      await asyncio.sleep(10)
+      await cat.delete()
+
+  if call == RAND_COMMAND:
+      try:
+        max=int(command[1])
+      except Exception:
+        max=20
+      number = random.randint(1,max)
+      await dissapMessage(message,str(number))
   await message.delete()
 
 
@@ -106,6 +130,10 @@ def doHelp():
   outString += "**" + INVOCATION_PREFIX + DELETE_COMMAND + "**" + " *[team_name]* will **PERMANENTLY** delete the team and all channels associated. \n"
   #returns the created string
   outString += "**" + INVOCATION_PREFIX + PING_COMMAND + "**" + " can check whether the bot is active \n"
+
+  outString += "**" + INVOCATION_PREFIX + RAND_COMMAND + "**" + " *[max_number]* will get a random number between 1 and max_number, inclusive. \n"
+
+  outString += "**" + INVOCATION_PREFIX + CAT_COMMAND + "**" + " 🐈 \n"
   return outString
 
 async def createTeam(message,command):
