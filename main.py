@@ -131,7 +131,7 @@ def doHelp():
   #returns the created string
   outString += "**" + INVOCATION_PREFIX + PING_COMMAND + "**" + " can check whether the bot is active \n"
 
-  outString += "**" + INVOCATION_PREFIX + RAND_COMMAND + "**" + " *[max_number]* will get a random number between 1 and max_number, inclusive. \n"
+  outString += "**" + INVOCATION_PREFIX + RAND_COMMAND + "**" + " *[max_number]* will get a random number between 1 and max_number, inclusive. (default 20)\n"
 
   outString += "**" + INVOCATION_PREFIX + CAT_COMMAND + "**" + " 🐈 \n"
   return outString
